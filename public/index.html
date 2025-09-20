@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>井字遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微軟正黑體", sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .status {
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 20px;
+            min-height: 24px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 8px;
+            margin: 0 auto 20px;
+        }
+
+        .cell {
+            background-color: #e9e9e9;
+            border: none;
+            border-radius: 8px;
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell:hover {
+            background-color: #d4d4d4;
+        }
+
+        .cell.x {
+            color: #3b82f6;
+        }
+
+        .cell.o {
+            color: #ef4444;
+        }
+
+        .btn {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>井字遊戲</h1>
+        <div class="status" id="status">玩家 X 回合</div>
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button class="btn" id="restart">重新開始</button>
+    </div>
+
+    <script>
+        // 遊戲狀態變數
+        let currentPlayer = 'X';
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+
+        // 獲取DOM元素
+        const statusElement = document.getElementById('status');
+        const boardElement = document.getElementById('board');
+        const restartButton = document.getElementById('restart');
+        const cells = document.querySelectorAll('.cell');
+
+        // 獲勝組合
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        // 渲染棋盤
+        function renderBoard() {
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index];
+                cell.classList.remove('x', 'o');
+                if (board[index] === 'X') {
+                    cell.classList.add('x');
+                } else if (board[index] === 'O') {
+                    cell.classList.add('o');
+                }
+            });
+        }
+
+        // 更換玩家
+        function changePlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusElement.textContent = `玩家 ${currentPlayer} 回合`;
+        }
+
+        // 檢查獲勝
+        function checkWin() {
+            let roundWon = false;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusElement.textContent = `恭喜玩家 ${currentPlayer} 獲勝！`;
+                gameActive = false;
+                return;
+            }
+
+            // 檢查平局
+            if (!board.includes('')) {
+                statusElement.textContent = '平局！';
+                gameActive = false;
+            } else {
+                changePlayer();
+            }
+        }
+
+        // 點擊方塊事件
+        function handleCellClick(e) {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            if (board[index] !== '' || !gameActive) {
+                return;
+            }
+
+            board[index] = currentPlayer;
+            renderBoard();
+            checkWin();
+        }
+
+        // 重新開始遊戲
+        function handleRestart() {
+            currentPlayer = 'X';
+            board = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            statusElement.textContent = `玩家 ${currentPlayer} 回合`;
+            renderBoard();
+        }
+
+        // 事件監聽
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+        restartButton.addEventListener('click', handleRestart);
+
+        // 初始化棋盤
+        renderBoard();
+    </script>
+</body>
+</html>
